@@ -4,6 +4,8 @@ import online.xiwang.service.CameraService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 // 思远删
+// 思远删2
+
 import java.util.List;
 @RestController   //返回值为json格式或者文本格式
 @RequestMapping("/api/camera")
