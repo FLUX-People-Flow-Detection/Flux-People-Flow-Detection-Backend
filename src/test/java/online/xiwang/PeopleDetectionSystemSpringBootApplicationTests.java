@@ -11,5 +11,3 @@ class PeopleDetectionSystemSpringBootApplicationTests {
     }
 
 }
-
-123456789000
