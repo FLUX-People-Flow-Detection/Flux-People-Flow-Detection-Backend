@@ -40,11 +40,4 @@ public class CameraController {
         return cameraService.getbyid(id);
 
     }
-
-
-
-
-
-
-
 }
