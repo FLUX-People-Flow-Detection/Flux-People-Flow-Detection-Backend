@@ -111,33 +111,7 @@ public class DetectionController {
                 case "14":
                     result.setFifteen(result.getFifteen()+1);
                     break;
-                case "15":
-                    result.setSixteen(result.getSixteen()+1);
-                    break;
-                case "16":
-                    result.setSeventeen(result.getSeventeen()+1);
-                    break;
-                case "17":
-                    result.setEighteen(result.getEighteen()+1);
-                    break;
-                case "18":
-                    result.setNineteen(result.getNineteen()+1);
-                    break;
-                case "19":
-                    result.setTwenty(result.getTwenty()+1);
-                    break;
-                case "20":
-                    result.setTwentyone(result.getTwentyone()+1);
-                    break;
-                case "21":
-                    result.setTwentytwo(result.getTwentytwo()+1);
-                    break;
-                case "22":
-                    result.setTwentythree(result.getTwentythree()+1);
-                    break;
-                case "23":
-                    result.setTwentyfour(result.getTwentyfour()+1);
-                    break;
+
                 default:
                     break;
             }
@@ -180,26 +154,46 @@ public class DetectionController {
      * @return    返回每个摄像头的人次和总的人次
      */
     @GetMapping("/perday/{date}")
-    public Map<Integer,int[]> perDay(@PathVariable String date){
-        List<Camera> cam = cameraService.getAll();  //查询有几个摄像头
-        Map<Integer, int[]> result = new HashMap<Integer,int[]>();   //新建map集合用作返回
-        //初始化
-        for(Camera c : cam){
-            int[] row = new int[]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-            result.put(c.getId(),row);
+    public Map<Integer, int[]> perDay(@PathVariable String date) {
+        List<Camera> cam = cameraService.getAll();  // 查询有几个摄像头
+        Map<Integer, int[]> result = new HashMap<>();   // 新建map集合用作返回
+        // 初始化
+        for (Camera c : cam) {
+            int[] row = new int[24];  // 假设一天有24小时
+            Arrays.fill(row, 0);     // 初始化数组为0
+            result.put(c.getId(), row);
         }
-        int[] sumcam = new int[]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};   //新建数组存总人次,
-        List<Detection> resultIn = detectionService.SelectBydate(date,"0");//查询记录
-        for(Detection d : resultIn){
-            result.replace(d.getCamera(),d.getAllData());
-            for(int i=0; i<24; i++){
-                sumcam[i] += d.getAllData()[i];      //计算总人次
+        int[] sumCam = new int[24];  // 新建数组存总人次, 假设一天有24小时
+        Arrays.fill(sumCam, 0);      // 初始化数组为0
+
+        List<Detection> resultIn = detectionService.SelectBydate(date, "0");  // 查询入的记录
+        List<Detection> resultOut = detectionService.SelectBydate(date, "1"); // 查询出的记录
+
+        // 计算入的人数
+        for (Detection d : resultIn) {
+            int[] data = d.getAllData();
+            for (int i = 0; i < 24; i++) {
+                int cameraId = d.getCamera();
+                int[] cameraData = result.get(cameraId);
+                cameraData[i] += data[i];  // 累加每个摄像头每小时的入人数
+                sumCam[i] += data[i];       // 累加总的入人数
             }
         }
-        result.put(0,sumcam);           //将总人次加入集合,0表示是总人次
+
+        // 计算出的人数
+        for (Detection d : resultOut) {
+            int[] data = d.getAllData();
+            for (int i = 0; i < 24; i++) {
+                int cameraId = d.getCamera();
+                int[] cameraData = result.get(cameraId);
+                cameraData[i] += data[i];  // 累减每个摄像头每小时的出人数
+                sumCam[i] += data[i];       // 累减总的出人数
+            }
+        }
+
+        result.put(0, sumCam);  // 将总人次加入集合, 0表示是总人次
 
         return result;
-
     }
 
     /**
